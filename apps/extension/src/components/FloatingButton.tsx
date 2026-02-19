@@ -3,6 +3,7 @@ import { ScrapedProduct } from '../lib/adapters/baseAdapter';
 import { Plus, X, ShoppingBag, Languages } from 'lucide-react';
 import { LingoChip } from './LingoChip';
 import { DomTranslator } from '../lib/domTranslator';
+import { LingoClient } from '../services/lingoClient';
 
 export const FloatingButton = ({ product }: { product: ScrapedProduct }) => {
     const [expanded, setExpanded] = useState(false);
@@ -13,16 +14,30 @@ export const FloatingButton = ({ product }: { product: ScrapedProduct }) => {
         const translator = new DomTranslator();
         const nodes = translator.extractTextNodes();
 
+        if (nodes.length === 0) {
+            setIsTranslating(false);
+            return;
+        }
+
         console.log(`[OmniPay] Found ${nodes.length} translatable nodes`);
 
-        // Mock Translation Delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Extract original texts
+        const originalTexts = nodes.map(n => n.originalText);
 
-        // Mock Translation Application (Simple Prefix)
-        nodes.forEach(node => {
-            // In real implementation, this comes from backend batch API
-            translator.replaceNodeWithTranslation(node, `[TR] ${node.originalText.substring(0, 20)}...`);
-        });
+        try {
+            // Call Backend API
+            // TODO: Get target language from user settings, defaulting to English for now
+            const translatedTexts = await LingoClient.translateBatch(originalTexts, "en");
+
+            // Apply translations
+            nodes.forEach((node, index) => {
+                if (translatedTexts[index]) {
+                    translator.replaceNodeWithTranslation(node, translatedTexts[index]);
+                }
+            });
+        } catch (e) {
+            console.error("[OmniPay] Translation failed", e);
+        }
 
         setIsTranslating(false);
     };
