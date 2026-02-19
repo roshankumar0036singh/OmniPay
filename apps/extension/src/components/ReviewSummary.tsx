@@ -1,19 +1,21 @@
 export const ReviewSummaryPanel = ({ consensus, pros, cons }: { consensus: string, pros: string[], cons: string[] }) => (
-    <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-        <h3 className="font-bold text-gray-900 mb-2">AI Review Summary</h3>
-        <p className="text-sm text-gray-700 italic mb-3">"{consensus}"</p>
+    <div className="bg-dark-card p-4 rounded-xl border border-dark-border mt-4 shadow-lg">
+        <h3 className="font-bold text-white mb-2 flex items-center gap-2">
+            <span className="bg-neon text-black text-xs px-1.5 py-0.5 rounded">AI</span> Review Summary
+        </h3>
+        <p className="text-sm text-gray-300 italic mb-3 border-l-2 border-neon pl-3 py-1 bg-white/5 rounded-r">"{consensus}"</p>
 
         <div className="grid grid-cols-2 gap-4">
             <div>
-                <h4 className="text-xs font-bold text-green-700 uppercase mb-1">Pros</h4>
-                <ul className="text-xs text-gray-600 space-y-1 list-disc pl-3">
-                    {pros.map((p, i) => <li key={i}>{p}</li>)}
+                <h4 className="text-xs font-bold text-neon uppercase mb-1 tracking-wider">Pros</h4>
+                <ul className="text-xs text-gray-400 space-y-1 list-none">
+                    {pros.map((p, i) => <li key={i} className="flex gap-1"><span className="text-neon">✓</span> {p}</li>)}
                 </ul>
             </div>
             <div>
-                <h4 className="text-xs font-bold text-red-700 uppercase mb-1">Cons</h4>
-                <ul className="text-xs text-gray-600 space-y-1 list-disc pl-3">
-                    {cons.map((c, i) => <li key={i}>{c}</li>)}
+                <h4 className="text-xs font-bold text-red-500 uppercase mb-1 tracking-wider">Cons</h4>
+                <ul className="text-xs text-gray-400 space-y-1 list-none">
+                    {cons.map((c, i) => <li key={i} className="flex gap-1"><span className="text-red-500">×</span> {c}</li>)}
                 </ul>
             </div>
         </div>
