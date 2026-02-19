@@ -1,10 +1,31 @@
 import { useState } from 'react';
 import { ScrapedProduct } from '../lib/adapters/baseAdapter';
-import { Plus, X, ShoppingBag } from 'lucide-react';
+import { Plus, X, ShoppingBag, Languages } from 'lucide-react';
 import { LingoChip } from './LingoChip';
+import { DomTranslator } from '../lib/domTranslator';
 
 export const FloatingButton = ({ product }: { product: ScrapedProduct }) => {
     const [expanded, setExpanded] = useState(false);
+    const [isTranslating, setIsTranslating] = useState(false);
+
+    const handleTranslate = async () => {
+        setIsTranslating(true);
+        const translator = new DomTranslator();
+        const nodes = translator.extractTextNodes();
+
+        console.log(`[OmniPay] Found ${nodes.length} translatable nodes`);
+
+        // Mock Translation Delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // Mock Translation Application (Simple Prefix)
+        nodes.forEach(node => {
+            // In real implementation, this comes from backend batch API
+            translator.replaceNodeWithTranslation(node, `[TR] ${node.originalText.substring(0, 20)}...`);
+        });
+
+        setIsTranslating(false);
+    };
 
     return (
         <div className="fixed bottom-6 right-6 z-[9999] font-sans group">
@@ -31,6 +52,14 @@ export const FloatingButton = ({ product }: { product: ScrapedProduct }) => {
                     <div className="grid grid-cols-2 gap-2">
                         <button className="col-span-2 w-full bg-white text-black font-bold py-2 rounded-xl text-xs hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
                             <Plus size={14} /> Add to OmniCart
+                        </button>
+                        <button
+                            onClick={handleTranslate}
+                            disabled={isTranslating}
+                            className="col-span-2 w-full bg-lingo-card border border-white/10 text-white font-bold py-2 rounded-xl text-xs hover:bg-white/5 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                            <Languages size={14} className={isTranslating ? 'animate-spin' : ''} />
+                            {isTranslating ? 'Translating Page...' : 'Translate Page'}
                         </button>
                     </div>
                 </div>
