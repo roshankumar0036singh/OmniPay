@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int      @id @default(autoincrement())
+  email            String   @unique
+  passwordHash     String
+  name             String?
+  locale           String   @default("en")
+  currency         String   @default("USD")
+  stripeCustomerId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  cart            Cart?
+  orders          Order[]
+  priceAlerts     PriceAlert[]
+  savedSearches   SavedSearch[]
+  supportTickets  SupportTicket[]
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id          Int      @id @default(autoincrement())
+  cartId      Int
+  cart        Cart     @relation(fields: [cartId], references: [id])
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int      @default(1)
+  priceAtAdd  Decimal
+  addedAt     DateTime @default(now())
+}
+
+model Product {
+  id              Int      @id @default(autoincrement())
+  siteId          String
+  externalId      String
+  url             String
+  title           String
+  titleTranslated String?
+  price           Decimal
+  currency        String
+  imageUrl        String?
+  sku             String?
+  
+  priceHistory    PriceHistory[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  priceAlerts     PriceAlert[]
+  ethicalReport   EthicalReport?
+  reviewSummary   ReviewSummary?
+
+  @@unique([siteId, externalId])
+}
+
+model Order {
+  id              Int         @id @default(autoincrement())
+  userId          Int
+  user            User        @relation(fields: [userId], references: [id])
+  status          String      // PENDING, PAID, FULFILLED, CANCELLED
+  totalUsd        Decimal
+  items           OrderItem[]
+  shippingAddress Json
+  createdAt       DateTime    @default(now())
+}
+
+model OrderItem {
+  id           Int     @id @default(autoincrement())
+  orderId      Int
+  order        Order   @relation(fields: [orderId], references: [id])
+  productId    Int
+  product      Product @relation(fields: [productId], references: [id])
+  quantity     Int
+  pricePaidUsd Decimal
+}
+
+model PriceHistory {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  price     Decimal
+  currency  String
+  priceUsd  Decimal?
+  capturedAt DateTime @default(now())
+}
+
+model PriceAlert {
+  id             Int     @id @default(autoincrement())
+  userId         Int
+  user           User    @relation(fields: [userId], references: [id])
+  productId      Int
+  product        Product @relation(fields: [productId], references: [id])
+  targetPriceUsd Decimal
+  isActive       Boolean @default(true)
+}
+
+model SavedSearch {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  user              User     @relation(fields: [userId], references: [id])
+  query             String
+  translatedQueries Json?
+  regions           String[]
+  createdAt         DateTime @default(now())
+}
+
+model SupportTicket {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  status    String   // OPEN, CLOSED
+  messages  TicketMessage[]
+  createdAt DateTime @default(now())
+}
+
+model TicketMessage {
+  id             Int           @id @default(autoincrement())
+  ticketId       Int
+  ticket         SupportTicket @relation(fields: [ticketId], references: [id])
+  direction      String        // INBOUND, OUTBOUND
+  originalLang   String
+  originalText   String
+  translatedText String?
+  sentAt         DateTime      @default(now())
+}
+
+model EthicalReport {
+  id                  Int      @id @default(autoincrement())
+  productId           Int      @unique
+  product             Product  @relation(fields: [productId], references: [id])
+  sustainabilityScore Int
+  materials           String[]
+  origin              String?
+  sourceData          Json?
+  generatedAt         DateTime @default(now())
+}
+
+model ReviewSummary {
+  id          Int      @id @default(autoincrement())
+  productId   Int      @unique
+  product     Product  @relation(fields: [productId], references: [id])
+  consensus   String
+  pros        String[]
+  cons        String[]
+  generatedAt DateTime @default(now())
+}

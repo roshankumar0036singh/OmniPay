@@ -1,0 +1,15 @@
+node_modules
+dist
+.env
+.DS_Store
+.plasmo
+build
+coverage
+.vscode
+.idea
+*.log
+
+# Prisma
+apps/backend/prisma/migrations
+apps/backend/prisma/dev.db
+apps/backend/prisma/generated
