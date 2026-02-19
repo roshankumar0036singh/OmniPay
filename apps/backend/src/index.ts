@@ -10,7 +10,12 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(morgan('dev'));
+import translateRoutes from './routes/translate';
+import authRoutes from './routes/auth';
+
 app.use(express.json());
+app.use('/api/auth', authRoutes);
+app.use('/api/translate', translateRoutes);
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'omnipay-backend' });

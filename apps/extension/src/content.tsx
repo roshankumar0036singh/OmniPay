@@ -1,6 +1,8 @@
 import type { PlasmoCSConfig } from "plasmo"
+import { createRoot } from "react-dom/client"
 import { detectSite, SupportedSite } from "./lib/siteDetector"
 import { AmazonJpAdapter } from "./lib/adapters/amazonJpAdapter"
+import { FloatingButton } from "./components/FloatingButton"
 
 export const config: PlasmoCSConfig = {
     matches: [
@@ -19,13 +21,23 @@ const init = async () => {
         if (adapter.detectProductPage()) {
             console.log('[OmniPay] Product page detected');
             const product = await adapter.scrapeProduct();
-            console.log('[OmniPay] Scraped product:', product);
-            // TODO: Inject floating UI here
+
+            if (product) {
+                console.log('[OmniPay] Scraped product:', product);
+
+                // Inject Floating UI
+                const mountPoint = document.createElement('div');
+                mountPoint.id = 'omnipay-floating-root';
+                document.body.appendChild(mountPoint);
+
+                const root = createRoot(mountPoint);
+                root.render(<FloatingButton product={product} />);
+            }
         }
     }
 }
 
-// Simple debounce to handle dynamic loading (SPA) behaviors
+// Simple debounce
 let timeout: NodeJS.Timeout;
 const debouncedInit = () => {
     clearTimeout(timeout);
@@ -33,5 +45,3 @@ const debouncedInit = () => {
 }
 
 window.addEventListener('load', debouncedInit);
-// Optional: Observe URL changes for SPAs if needed
-// window.addEventListener('popstate', debouncedInit);
