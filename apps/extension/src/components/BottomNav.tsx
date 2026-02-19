@@ -4,14 +4,16 @@ interface NavProps {
 }
 
 export const BottomNav = ({ activeTab, setActiveTab }: NavProps) => (
-  <nav className="bg-dark-bg border-t border-dark-border grid grid-cols-3 p-1">
+  <nav className="bg-black border-t-2 border-neon grid grid-cols-3 font-mono">
     {['home', 'search', 'settings'].map((tab) => (
       <button
         key={tab}
         onClick={() => setActiveTab(tab)}
-        className={`flex flex-col items-center justify-center p-2 rounded-lg transition duration-200 ${activeTab === tab ? "text-black bg-neon shadow-[0_0_8px_rgba(204,255,0,0.5)]" : "text-gray-500 hover:text-white hover:bg-white/5"}`}
+        className={`flex flex-col items-center justify-center py-3 transition-all ${activeTab === tab ? "bg-neon text-black font-extrabold" : "text-neon hover:bg-neon/20"}`}
       >
-        <span className="text-xs font-bold mt-1 capitalize">{tab}</span>
+        <div className={`text-[10px] uppercase tracking-widest ${activeTab === tab ? "" : "opacity-70"}`}>
+          [{tab}]
+        </div>
       </button>
     ))}
   </nav>
