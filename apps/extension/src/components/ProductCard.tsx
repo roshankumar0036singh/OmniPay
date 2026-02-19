@@ -1,21 +1,34 @@
+import { Plus } from "lucide-react"
+
 export const ProductCard = ({ title, price, image }: { title: string, price: string, image: string }) => (
-  <div className="bg-retro-card p-2 border border-neon relative group hover:bg-neon/10 transition-colors">
-    <div className="absolute top-0 right-0 w-2 h-2 bg-neon"></div>
-    <div className="absolute bottom-0 left-0 w-2 h-2 bg-neon"></div>
+  <div className="group relative bg-lingo-card/80 backdrop-blur-sm border border-white/5 rounded-xl overflow-hidden hover:border-lingo-green/50 transition-all duration-300 hover:shadow-lingo-glow">
+    {/* Subtle gradient overlay */}
+    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-    <div className="flex gap-3">
-      <div className="relative">
-        <img src={image} className="w-16 h-16 object-cover grayscale contrast-125 border border-neon/50" alt={title} />
-        <div className="absolute inset-0 bg-neon/20 pointer-events-none mix-blend-overlay"></div>
+    <div className="flex p-3 gap-3">
+      {/* Image Container */}
+      <div className="w-16 h-16 rounded-lg bg-black/50 border border-white/10 flex-shrink-0 overflow-hidden">
+        <img src={image} alt={title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
       </div>
 
-      <div className="flex-1 font-mono">
-        <h3 className="text-xs font-bold text-neon truncate max-w-[150px] uppercase tracking-tighter">&gt; {title}</h3>
-        <p className="text-white font-bold mt-1 text-sm bg-black inline-block px-1 border-l-2 border-neon">{price}</p>
+      {/* Content */}
+      <div className="flex-1 min-w-0 flex flex-col justify-between">
+        <div>
+          <h3 className="text-sm font-medium text-white truncate group-hover:text-lingo-green transition-colors font-sans">{title}</h3>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs text-gray-400">Amazon JP</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-lingo-green/10 text-lingo-green border border-lingo-green/20">Best Price</span>
+          </div>
+        </div>
+
+        <div className="flex items-end justify-between mt-2">
+          <span className="text-lg font-bold text-white font-sans tracking-tight">{price}</span>
+        </div>
       </div>
 
-      <button className="h-8 w-8 bg-transparent text-neon border-2 border-neon flex items-center justify-center hover:bg-neon hover:text-black transition-all">
-        +
+      {/* Add Action */}
+      <button className="self-center p-2 rounded-full bg-white/5 hover:bg-lingo-green hover:text-black text-gray-400 transition-all border border-white/10 hover:border-lingo-green group-hover:scale-105 active:scale-95">
+        <Plus size={18} />
       </button>
     </div>
   </div>
