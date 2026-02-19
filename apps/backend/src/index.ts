@@ -16,6 +16,8 @@ import authRoutes from './routes/auth';
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/translate', translateRoutes);
+import searchRoutes from './routes/search';
+app.use('/api/search', searchRoutes);
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'omnipay-backend' });
