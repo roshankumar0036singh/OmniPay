@@ -1,23 +1,17 @@
 import { useState } from "react"
+import { Header } from "./components/Header"
+import { BottomNav } from "./components/BottomNav"
+import { SearchBar } from "./components/SearchBar"
+import { ProductCard } from "./components/ProductCard"
+import { CartDrawer } from "./components/CartDrawer"
 import "./style.css"
 
 function IndexPopup() {
     const [activeTab, setActiveTab] = useState("home")
 
     return (
-        <div className="w-[400px] h-[500px] flex flex-col bg-slate-50">
-            {/* Header */}
-            <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">O</span>
-                    </div>
-                    <h1 className="text-xl font-bold text-gray-900">OmniPay</h1>
-                </div>
-                <div className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100">
-                    Active
-                </div>
-            </header>
+        <div className="w-[400px] h-[500px] flex flex-col bg-slate-50 relative">
+            <Header />
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto p-4">
@@ -38,31 +32,33 @@ function IndexPopup() {
                                 Browse any supported site (Amazon JP, Rakuten) to start shopping globally.
                             </p>
                         </div>
+
+                        <div className="space-y-3">
+                            <h3 className="font-medium text-gray-900">Trending</h3>
+                            <ProductCard title="Sony WH-1000XM5" price="¥42,000" image="https://via.placeholder.com/150" />
+                            <ProductCard title="Vintage Film Camera" price="€120.00" image="https://via.placeholder.com/150" />
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === "search" && (
+                    <div className="space-y-4">
+                        <SearchBar />
+                        <div className="text-center text-gray-500 text-sm mt-8">
+                            enter a search term to find global products
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === "settings" && (
+                    <div className="p-4 text-center text-gray-500">
+                        Settings panel coming soon
                     </div>
                 )}
             </main>
 
-            {/* Bottom Nav */}
-            <nav className="bg-white border-t border-gray-200 grid grid-cols-3 p-1">
-                <button
-                    onClick={() => setActiveTab("home")}
-                    className={`flex flex-col items-center justify-center p-2 rounded-lg transition ${activeTab === "home" ? "text-blue-600 bg-blue-50" : "text-gray-400 hover:text-gray-600"}`}
-                >
-                    <span className="text-xs font-medium mt-1">Home</span>
-                </button>
-                <button
-                    onClick={() => setActiveTab("search")}
-                    className={`flex flex-col items-center justify-center p-2 rounded-lg transition ${activeTab === "search" ? "text-blue-600 bg-blue-50" : "text-gray-400 hover:text-gray-600"}`}
-                >
-                    <span className="text-xs font-medium mt-1">Search</span>
-                </button>
-                <button
-                    onClick={() => setActiveTab("settings")}
-                    className={`flex flex-col items-center justify-center p-2 rounded-lg transition ${activeTab === "settings" ? "text-blue-600 bg-blue-50" : "text-gray-400 hover:text-gray-600"}`}
-                >
-                    <span className="text-xs font-medium mt-1">Settings</span>
-                </button>
-            </nav>
+            <CartDrawer />
+            <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
     )
 }
