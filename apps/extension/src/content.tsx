@@ -5,6 +5,7 @@ import { AmazonJpAdapter } from "./lib/adapters/amazonJpAdapter"
 import { FloatingButton } from "./components/FloatingButton"
 import { PriceCompare } from "./components/PriceCompare"
 import { EthicalBadge } from "./components/EthicalBadge"
+import { ReviewSummary } from "./components/ReviewSummary"
 
 export const config: PlasmoCSConfig = {
     matches: [
@@ -35,12 +36,16 @@ const init = async () => {
                 const root = createRoot(mountPoint);
                 root.render(
                     <>
-                        {/* Ethical Badge */}
-                        <div className="fixed bottom-24 left-6 z-[999999]">
+                        {/* Left Side Widgets */}
+                        <div className="fixed bottom-24 left-6 z-[999999] flex flex-col gap-4 items-start">
                             <EthicalBadge
                                 productId={product.id.toString()}
                                 title={product.title}
                                 description={product.description || ''}
+                            />
+                            <ReviewSummary
+                                productId={product.id.toString()}
+                                title={product.title}
                             />
                         </div>
                         {/* Price Compare widget */}
