@@ -8,6 +8,7 @@ import { SearchBar } from "./components/SearchBar"
 import { SearchResults } from "./components/SearchResults"
 import { useSearchStore } from "./stores/useSearchStore"
 import { ApiClient } from "./services/apiClient"
+import { SupportProxy } from "./components/SupportProxy"
 
 import "./style.css"
 
@@ -72,6 +73,12 @@ function SidePanel() {
                             <div className="flex-1">
                                 <SearchResults />
                             </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'support' && (
+                        <div className="h-full flex items-center justify-center p-2">
+                            <SupportProxy />
                         </div>
                     )}
 

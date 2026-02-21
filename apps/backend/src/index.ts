@@ -23,12 +23,14 @@ import orderRoutes from './routes/orders';
 import priceRoutes from './routes/price';
 import ethicalRoutes from './routes/ethical';
 import sentimentRoutes from './routes/sentiment';
+import supportRoutes from './routes/support';
 
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/price', priceRoutes);
 app.use('/api/ethical', ethicalRoutes);
 app.use('/api/sentiment', sentimentRoutes);
+app.use('/api/support', supportRoutes);
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'omnipay-backend' });
