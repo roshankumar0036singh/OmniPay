@@ -1,0 +1,17 @@
+{
+    "home.title": "OmniPay",
+    "home.subtitle": "地元のように世界で買い物をする。",
+    "home.trending": "トレンド",
+    "nav.home": "ホーム",
+    "nav.search": "検索",
+    "nav.support": "サポート",
+    "nav.settings": "設定",
+    "search.placeholder": "グローバルに検索...",
+    "product.addToCart": "グローバルカートに追加",
+    "support.tickets": "サポートチケット",
+    "support.noTickets": "アクティブなチケットはありません。",
+    "support.newInquiry": "新しいお問い合わせ...",
+    "support.autoTranslating": "自動翻訳中",
+    "settings.title": "言語設定",
+    "settings.language": "アプリの言語"
+}

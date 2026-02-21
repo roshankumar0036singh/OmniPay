@@ -9,17 +9,18 @@ import { SearchResults } from "./components/SearchResults"
 import { useSearchStore } from "./stores/useSearchStore"
 import { ApiClient } from "./services/apiClient"
 import { SupportProxy } from "./components/SupportProxy"
+import { useTranslation } from "./hooks/useTranslation"
 
 import "./style.css"
 
 function SidePanel() {
     const [activeTab, setActiveTab] = useState("home")
     const { query, activeRegions, setResults, setLoading } = useSearchStore()
+    const { t } = useTranslation()
 
     const handleSearch = async () => {
         if (!query.trim()) return
         setLoading(true)
-        // Switch to search tab if not already active to show results
         if (activeTab !== 'search') setActiveTab('search')
 
         try {
@@ -46,9 +47,9 @@ function SidePanel() {
                             {/* Hero / Welcome */}
                             <div className="text-center mb-6">
                                 <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                                    OmniPay
+                                    {t('home.title')}
                                 </h2>
-                                <p className="text-sm text-gray-400">Shop the world like a local.</p>
+                                <p className="text-sm text-gray-400">{t('home.subtitle')}</p>
                             </div>
 
                             {/* Quick Search */}
@@ -56,7 +57,7 @@ function SidePanel() {
 
                             {/* Trending / Feed */}
                             <div className="space-y-4 pt-4">
-                                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Trending Now</h3>
+                                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('home.trending')}</h3>
                                 <ProductCard
                                     id="trending-1"
                                     title="Sony WH-1000XM5 Wireless Headphones"
@@ -83,8 +84,32 @@ function SidePanel() {
                     )}
 
                     {activeTab === 'settings' && (
-                        <div className="flex items-center justify-center h-full text-gray-500 text-sm">
-                            Settings are locked.
+                        <div className="flex flex-col items-center justify-center h-full space-y-4 p-4">
+                            <h3 className="text-lg font-bold w-full text-center border-b border-white/10 pb-4 mb-4">{t('settings.title')}</h3>
+
+                            <div className="w-full bg-white/5 border border-white/10 rounded-xl p-4 flex justify-between items-center">
+                                <span className="text-sm text-gray-300">{t('settings.language')}</span>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => {
+                                            localStorage.setItem('omnipay-locale', 'en');
+                                            window.location.reload();
+                                        }}
+                                        className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded border border-white/20 text-xs"
+                                    >
+                                        EN 🇺🇸
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            localStorage.setItem('omnipay-locale', 'ja');
+                                            window.location.reload();
+                                        }}
+                                        className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded border border-white/20 text-xs"
+                                    >
+                                        JA 🇯🇵
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </main>

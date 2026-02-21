@@ -1,11 +1,14 @@
 import { Home, Search, Settings, MessageSquare } from "lucide-react"
+import { useTranslation } from "../hooks/useTranslation"
 
 export const BottomNav = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (t: string) => void }) => {
+  const { t } = useTranslation();
+
   const tabs = [
-    { id: 'home', icon: Home, label: 'Home' },
-    { id: 'search', icon: Search, label: 'Search' },
-    { id: 'support', icon: MessageSquare, label: 'Support' },
-    { id: 'settings', icon: Settings, label: 'Settings' }
+    { id: 'home', icon: Home, label: t('nav.home') },
+    { id: 'search', icon: Search, label: t('nav.search') },
+    { id: 'support', icon: MessageSquare, label: t('nav.support') },
+    { id: 'settings', icon: Settings, label: t('nav.settings') }
   ]
 
   return (
