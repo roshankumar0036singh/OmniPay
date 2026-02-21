@@ -28,6 +28,7 @@ export const SearchResults = () => {
             {results.map((product) => (
                 <ProductCard
                     key={product.id}
+                    id={product.id}
                     title={product.title}
                     price={`${product.currency} ${product.price.toLocaleString()}`}
                     image={product.image}

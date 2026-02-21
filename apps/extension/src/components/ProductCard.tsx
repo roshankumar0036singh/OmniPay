@@ -1,6 +1,8 @@
 import { Plus, Info } from "lucide-react"
+import { useCartStore } from "../stores/useCartStore"
 
 export interface ProductCardProps {
+  id: string; // Changed to string to match SearchResult, but backend expects number. We'll parse it.
   title: string;
   price: string;
   image: string;
@@ -11,7 +13,19 @@ export interface ProductCardProps {
   savings?: string;
 }
 
-export const ProductCard = ({ title, price, image, region, landedCost, site = "Amazon JP", savings }: ProductCardProps) => {
+export const ProductCard = ({ id, title, price, image, region, landedCost, site = "Amazon JP", savings }: ProductCardProps) => {
+  const { addToCart } = useCartStore()
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    // Ensure ID is a number for the backend
+    // In a real app, we'd handle string IDs (ASINs) properly in backend
+    // For now, let's assume hash or parse
+    const numericId = parseInt(id.replace(/[^0-9]/g, '').slice(0, 9)) || 1;
+    addToCart(numericId);
+  };
+
   const regionFlag = {
     'JP': '🇯🇵',
     'US': '🇺🇸',
@@ -63,7 +77,10 @@ export const ProductCard = ({ title, price, image, region, landedCost, site = "A
               )}
             </div>
 
-            <button className="p-2 rounded-full bg-white/5 hover:bg-lingo-green hover:text-black text-gray-400 transition-all border border-white/10 hover:border-lingo-green group-hover:scale-105 active:scale-95">
+            <button
+              onClick={handleAddToCart}
+              className="p-2 rounded-full bg-white/5 hover:bg-lingo-green hover:text-black text-gray-400 transition-all border border-white/10 hover:border-lingo-green group-hover:scale-105 active:scale-95"
+            >
               <Plus size={16} />
             </button>
           </div>

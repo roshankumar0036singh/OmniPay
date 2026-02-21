@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client"
 import { detectSite, SupportedSite } from "./lib/siteDetector"
 import { AmazonJpAdapter } from "./lib/adapters/amazonJpAdapter"
 import { FloatingButton } from "./components/FloatingButton"
+import { PriceCompare } from "./components/PriceCompare"
 
 export const config: PlasmoCSConfig = {
     matches: [
@@ -31,7 +32,15 @@ const init = async () => {
                 document.body.appendChild(mountPoint);
 
                 const root = createRoot(mountPoint);
-                root.render(<FloatingButton product={product} />);
+                root.render(
+                    <>
+                        {/* Render Price Compare widget explicitly for testing/demo */}
+                        <div className="fixed bottom-24 right-6 z-[999999]">
+                            <PriceCompare productTitle={product.title} />
+                        </div>
+                        <FloatingButton product={product} />
+                    </>
+                );
             }
         }
     }

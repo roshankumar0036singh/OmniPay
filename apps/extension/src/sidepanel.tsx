@@ -57,6 +57,7 @@ function SidePanel() {
                             <div className="space-y-4 pt-4">
                                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Trending Now</h3>
                                 <ProductCard
+                                    id="trending-1"
                                     title="Sony WH-1000XM5 Wireless Headphones"
                                     price="¥49,800"
                                     image="https://m.media-amazon.com/images/I/41Kx5gZ-20L._AC_SY580_.jpg"

@@ -18,6 +18,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/translate', translateRoutes);
 import searchRoutes from './routes/search';
 app.use('/api/search', searchRoutes);
+import cartRoutes from './routes/cart';
+import orderRoutes from './routes/orders';
+import priceRoutes from './routes/price';
+app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/price', priceRoutes);
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'omnipay-backend' });
