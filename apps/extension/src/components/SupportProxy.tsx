@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Send, Globe, RefreshCw } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface TicketMessage {
     id: string;
@@ -23,6 +24,7 @@ export const SupportProxy = ({ productId, title }: { productId?: string, title?:
     const [inputText, setInputText] = useState("");
     const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const { t } = useTranslation();
 
     const fetchTickets = async () => {
         try {
@@ -194,7 +196,7 @@ export const SupportProxy = ({ productId, title }: { productId?: string, title?:
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleCreateTicket()}
-                    placeholder={title ? `Ask about \${title}...` : "New inquiry..."}
+                    placeholder={t('support.newInquiry')}
                     className="flex-1 bg-black border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-neon transition-colors"
                     disabled={loading}
                 />

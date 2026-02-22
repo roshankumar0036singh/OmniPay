@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import OpenAI from 'openai';
 
 const prisma = new PrismaClient();
 
@@ -15,20 +16,67 @@ export interface EthicalReport {
 
 export class EthicalScannerService {
     /**
-     * Generate an ethical score for a product.
-     * In a real app, this would call Good On You, Open Apparel Registry, or an LLM.
-     * For this MVP, we simulate a scan based on product keywords.
+     * Generate an ethical score for a product using OpenAI.
+     * Falls back to keyword heuristics if API key is not present.
      */
     static async scanProduct(productId: string, title: string, description: string = ''): Promise<EthicalReport> {
-        // Simple mock logic for MVP
+        if (!process.env.OPENAI_API_KEY) {
+            console.warn("OPENAI_API_KEY not found. Falling back to mock ethical heuristics.");
+            return this.mockScan(productId, title, description);
+        }
+
+        try {
+            const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+            const prompt = `You are a strict sustainable fashion and consumer goods analyst. 
+Analyze the following product for ethical, environmental, and sustainability indicators.
+Product Title: "${title}"
+Description: "${description}"
+
+Provide a detailed ethical assessment. If the description is vague, assume a standard score and flag lack of transparency.
+Return exactly AND ONLY a JSON object with this shape:
+{
+  "score": 65,
+  "grade": "C",
+  "materials": ["Cotton", "Polyester (Assumed)"],
+  "origin": "Unverified",
+  "certifications": ["None detected"],
+  "flags": ["Lack of material transparency", "Potential fast fashion"],
+  "summary": "Short 1-2 sentence summary of the ethical standing."
+}`;
+
+            const response = await openai.chat.completions.create({
+                model: 'gpt-4o-mini',
+                messages: [{ role: 'user', content: prompt }],
+                response_format: { type: 'json_object' },
+            });
+
+            const content = response.choices[0].message.content || "{}";
+            const parsed = JSON.parse(content);
+
+            return {
+                productId,
+                score: typeof parsed.score === 'number' ? parsed.score : 50,
+                grade: parsed.grade || 'C',
+                materials: Array.isArray(parsed.materials) ? parsed.materials : ['Unknown'],
+                origin: parsed.origin || 'Unverified',
+                certifications: Array.isArray(parsed.certifications) ? parsed.certifications : [],
+                flags: Array.isArray(parsed.flags) ? parsed.flags : [],
+                summary: parsed.summary || 'Ethical assessment unavailable.'
+            };
+        } catch (error) {
+            console.error("OpenAI ethical scan failed:", error);
+            return this.mockScan(productId, title, description);
+        }
+    }
+
+    private static mockScan(productId: string, title: string, description: string): EthicalReport {
         const text = `${title} ${description}`.toLowerCase();
 
-        let score = 50; // Base score
+        let score = 50;
         const materials = [];
         const flags = [];
         const certifications = [];
 
-        // Simple keyword heuristics
         if (text.includes('organic cotton') || text.includes('recycled')) {
             score += 30;
             materials.push(text.includes('organic cotton') ? 'Organic Cotton' : 'Recycled Materials');
@@ -49,10 +97,8 @@ export class EthicalScannerService {
             flags.push('High waste industry');
         }
 
-        // Clamp score 0-100
         score = Math.max(0, Math.min(100, score));
 
-        // Assign Grade
         let grade: 'A' | 'B' | 'C' | 'D' | 'F' = 'C';
         if (score >= 90) grade = 'A';
         else if (score >= 70) grade = 'B';
@@ -65,7 +111,7 @@ export class EthicalScannerService {
             score,
             grade,
             materials: materials.length > 0 ? materials : ['Unknown'],
-            origin: 'Various / Unverified', // Mock
+            origin: 'Various / Unverified',
             certifications,
             flags,
             summary: `This product scored ${score}/100. ${flags.length > 0 ? 'Proceed with caution due to environmental flags.' : 'Good ethical standing.'}`

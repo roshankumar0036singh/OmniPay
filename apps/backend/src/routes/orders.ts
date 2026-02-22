@@ -4,14 +4,27 @@ import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
-// Checkout (Create Order)
+// Create Payment Intent (Start Checkout)
+router.post('/checkout', authMiddleware, async (req: any, res) => {
+    try {
+        const { shippingAddress } = req.body;
+        const paymentData = await OrderService.createPaymentIntent(req.user.userId, shippingAddress);
+        res.json(paymentData);
+    } catch (error: any) {
+        console.error("Checkout Error:", error);
+        res.status(400).json({ error: error.message || 'Checkout failed' });
+    }
+});
+
+// Finalize Order (Called after payment success on client, or mostly for testing MVP flow)
 router.post('/', authMiddleware, async (req: any, res) => {
     try {
         const { shippingAddress } = req.body;
+        // In a real Stripe flow, we'd rely on webhooks, but for MVP we might allow manual creation
         const order = await OrderService.createOrderFromCart(req.user.userId, shippingAddress);
         res.status(201).json(order);
     } catch (error: any) {
-        res.status(400).json({ error: error.message || 'Checkout failed' });
+        res.status(400).json({ error: error.message || 'Order creation failed' });
     }
 });
 
