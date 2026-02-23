@@ -4,6 +4,7 @@ export interface ScrapedProduct {
     price: number;
     currency: string;
     image: string;
+    description?: string;
     url: string;
     site: string;
     region: string; // 'JP', 'US', 'DE', etc.

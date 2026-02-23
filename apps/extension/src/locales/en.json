@@ -1,0 +1,17 @@
+{
+    "home.title": "OmniPay",
+    "home.subtitle": "Shop the world like a local.",
+    "home.trending": "Trending Now",
+    "nav.home": "Home",
+    "nav.search": "Search",
+    "nav.support": "Support",
+    "nav.settings": "Settings",
+    "search.placeholder": "Search globally...",
+    "product.addToCart": "Add to Global Cart",
+    "support.tickets": "Support Tickets",
+    "support.noTickets": "No active tickets.",
+    "support.newInquiry": "New inquiry...",
+    "support.autoTranslating": "Auto-Translating",
+    "settings.title": "Language Settings",
+    "settings.language": "App Language"
+}

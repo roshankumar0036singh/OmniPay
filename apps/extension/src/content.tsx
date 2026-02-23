@@ -4,6 +4,8 @@ import { detectSite, SupportedSite } from "./lib/siteDetector"
 import { AmazonJpAdapter } from "./lib/adapters/amazonJpAdapter"
 import { FloatingButton } from "./components/FloatingButton"
 import { PriceCompare } from "./components/PriceCompare"
+import { EthicalBadge } from "./components/EthicalBadge"
+import { ReviewSummary } from "./components/ReviewSummary"
 
 export const config: PlasmoCSConfig = {
     matches: [
@@ -34,7 +36,19 @@ const init = async () => {
                 const root = createRoot(mountPoint);
                 root.render(
                     <>
-                        {/* Render Price Compare widget explicitly for testing/demo */}
+                        {/* Left Side Widgets */}
+                        <div className="fixed bottom-24 left-6 z-[999999] flex flex-col gap-4 items-start">
+                            <EthicalBadge
+                                productId={product.id.toString()}
+                                title={product.title}
+                                description={product.description || ''}
+                            />
+                            <ReviewSummary
+                                productId={product.id.toString()}
+                                title={product.title}
+                            />
+                        </div>
+                        {/* Price Compare widget */}
                         <div className="fixed bottom-24 right-6 z-[999999]">
                             <PriceCompare productTitle={product.title} />
                         </div>
