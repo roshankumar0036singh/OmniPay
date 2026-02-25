@@ -6,16 +6,19 @@ export class ScrapingService {
      * Scrape search results from a specific region
      */
     static async scrapeSearchResults(region: string, query: string): Promise<ScrapedProduct[]> {
-        const adapter = AdapterRegistry.getAdapter(region);
+        const adapters = AdapterRegistry.getAdapters(region);
 
-        if (!adapter) {
-            console.warn(`[ScrapingService] No adapter found for region: ${region}`);
+        if (adapters.length === 0) {
+            console.warn(`[ScrapingService] No adapters found for region: ${region}`);
             return [];
         }
 
         try {
-            console.log(`[ScrapingService] Scraping ${region} for "${query}"`);
-            return await adapter.scrapeSearchResults(query);
+            console.log(`[ScrapingService] Scraping ${region} with ${adapters.length} adapters for "${query}"`);
+            const results = await Promise.all(
+                adapters.map(adapter => adapter.scrapeSearchResults(query).catch(e => []))
+            );
+            return results.flat();
         } catch (error) {
             console.error(`[ScrapingService] Error scraping ${region}:`, error);
             return [];
@@ -26,13 +29,14 @@ export class ScrapingService {
      * Scrape a specific product URL
      */
     static async scrapeProduct(url: string, region: string): Promise<ScrapedProduct | null> {
-        const adapter = AdapterRegistry.getAdapter(region);
+        const adapters = AdapterRegistry.getAdapters(region);
 
-        if (!adapter) {
+        if (adapters.length === 0) {
             // TODO: Fallback to generic scraper or try to detect region from URL
             return null;
         }
 
-        return await adapter.scrapeProduct(url);
+        // For single product, just use the first matching adapter
+        return await adapters[0].scrapeProduct(url);
     }
 }
