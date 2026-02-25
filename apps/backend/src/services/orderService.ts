@@ -1,61 +1,65 @@
 import { PrismaClient } from '@prisma/client';
 import { CartService } from './cartService';
-import { StripeClient } from '../integrations/stripeClient';
 
 const prisma = new PrismaClient();
-const stripe = StripeClient.getInstance();
 
 export class OrderService {
-    static async createPaymentIntent(userId: number, shippingAddress: any) {
+    static async createCheckoutSession(userId: number, shippingAddress: any) {
         const cart = await CartService.getCart(userId);
 
         if (cart.items.length === 0) {
             throw new Error('Cart is empty');
         }
 
-        // Calculate total in cents (USD)
-        const totalUsd = cart.items.reduce((sum: number, item: any) => {
-            return sum + (Number(item.priceAtAdd) * item.quantity);
-        }, 0);
+        const totalUsd = cart.items.reduce((sum: number, item: any) => sum + (Number(item.priceAtAdd) * item.quantity), 0);
 
-        const amountInCents = Math.round(totalUsd * 100);
+        // Create a PENDING order directly
+        const order = await prisma.$transaction(async (tx: any) => {
+            const newOrder = await tx.order.create({
+                data: {
+                    userId,
+                    status: 'PENDING',
+                    totalUsd,
+                    shippingAddress: shippingAddress || {},
+                    items: {
+                        create: cart.items.map((item: any) => ({
+                            productId: item.productId,
+                            quantity: item.quantity,
+                            pricePaidUsd: item.priceAtAdd
+                        }))
+                    }
+                }
+            });
 
-        // Create Stripe PaymentIntent
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: amountInCents,
-            currency: 'usd',
-            automatic_payment_methods: {
-                enabled: true,
-            },
-            metadata: {
-                userId: userId.toString(),
-                cartId: cart.id.toString(),
-            },
+            // Clear the user's cart
+            await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+            return newOrder;
         });
 
-        // We don't create the Order in DB yet. We wait for webhook or client confirmation.
-        // But for this MVP, we might want to return the clientSecret so the frontend can complete payment.
-
         return {
-            clientSecret: paymentIntent.client_secret,
-            amount: totalUsd,
-            currency: 'USD'
+            url: `http://localhost:3000/api/mock-checkout/${order.id}`,
+            sessionId: `mock_session_${order.id}`
         };
     }
 
     // ... existing methods (getOrders, getOrderById) ...
 
     // Method to handle successful payment webhook
-    static async fulfillOrder(paymentIntentId: string) {
-        // Logic to move Cart -> Order upon successful payment
-        // For now, we'll keep the simple createOrderFromCart but maybe adapt it
-        // This part is tricky without a real webhook flow locally.
-        // We'll trust the frontend flow for Phase 13 MVP.
+    static async fulfillOrder(paymentIntentId: string, metadata: any) {
+        if (!metadata || !metadata.userId || !metadata.cartId) {
+            console.error("[OrderService] Missing metadata in payment intent");
+            return;
+        }
+
+        const userId = parseInt(metadata.userId);
+        // Execute the same logic we used for manual cart checkout
+        await this._createOrderTransaction(userId, {});
+        console.log(`[OrderService] Successfully fulfilled order for pi: ${paymentIntentId}`);
     }
 
     // Keeping legacy method for manual testing scenarios if needed, but primary flow is now PaymentIntent
     static async createOrderFromCart(userId: number, shippingAddress: any) {
-        // ... implementation same as before ...
         return await this._createOrderTransaction(userId, shippingAddress);
     }
 
