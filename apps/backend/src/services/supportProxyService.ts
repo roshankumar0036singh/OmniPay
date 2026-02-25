@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client';
+import { LingoService } from '../integrations/lingoService';
 
 const prisma = new PrismaClient();
+const lingo = LingoService.getInstance();
 
 export interface TicketMessage {
     id: string;
@@ -33,6 +35,14 @@ export class SupportProxyService {
     static async createTicket(userId: string, orderId: string, subject: string, initialMessage: string): Promise<SupportTicket> {
         const ticketId = `tkt_${Date.now()}`;
 
+        // Assume seller is Japanese for this demo
+        const transResult = await lingo.translate({
+            text: initialMessage,
+            targetLang: 'ja',
+            sourceLang: 'en',
+            context: 'support-chat'
+        });
+
         const newTicket: SupportTicket = {
             id: ticketId,
             orderId,
@@ -43,8 +53,7 @@ export class SupportProxyService {
                     id: `msg_${Date.now()}`,
                     sender: 'user',
                     originalText: initialMessage,
-                    // In a real app, send to Lingo.dev to translate to seller's language
-                    translatedText: `[Translated to JP]: ${initialMessage}`,
+                    translatedText: transResult.translated || `[JA] ${initialMessage}`,
                     timestamp: new Date()
                 }
             ]
@@ -64,15 +73,21 @@ export class SupportProxyService {
         const ticket = this.tickets[ticketId];
         if (!ticket) throw new Error('Ticket not found');
 
-        const translatedText = sender === 'user'
-            ? `[Translated to JP]: ${message}`
-            : `[Translated to EN]: ${message}`;
+        const targetLang = sender === 'user' ? 'ja' : 'en';
+        const sourceLang = sender === 'user' ? 'en' : 'ja';
+
+        const transResult = await lingo.translate({
+            text: message,
+            targetLang,
+            sourceLang,
+            context: 'support-chat'
+        });
 
         ticket.messages.push({
             id: `msg_${Date.now()}`,
             sender,
             originalText: message,
-            translatedText,
+            translatedText: transResult.translated || `[${targetLang.toUpperCase()}] ${message}`,
             timestamp: new Date()
         });
 
