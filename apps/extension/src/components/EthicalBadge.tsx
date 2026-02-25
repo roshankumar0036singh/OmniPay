@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Leaf, AlertTriangle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { ApiClient } from '../services/apiClient';
 
 interface EthicalReport {
     productId: string;
@@ -19,25 +20,11 @@ export const EthicalBadge = ({ productId, title, description = '' }: { productId
 
     useEffect(() => {
         const fetchScan = async () => {
-            try {
-                const res = await fetch('http://localhost:3000/api/ethical/scan', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer dev-token'
-                    },
-                    body: JSON.stringify({ productId, title, description })
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    setReport(data);
-                }
-            } catch (e) {
-                console.error("Ethical scan failed", e);
-            } finally {
-                setLoading(false);
+            const data = await ApiClient.scanEthical(productId, title, description);
+            if (data) {
+                setReport(data);
             }
+            setLoading(false);
         };
 
         if (productId && title) {
