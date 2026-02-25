@@ -1,8 +1,4 @@
-import { PrismaClient } from '@prisma/client';
 import { Mistral } from '@mistralai/mistralai';
-
-const prisma = new PrismaClient();
-
 export interface ReviewSummaryData {
     productId: string;
     consensus: string;
