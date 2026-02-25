@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import OpenAI from 'openai';
+import { Mistral } from '@mistralai/mistralai';
 
 const prisma = new PrismaClient();
 
@@ -14,17 +14,19 @@ export interface ReviewSummaryData {
 
 export class SentimentService {
     /**
-     * Analyze and summarize product reviews using OpenAI.
-     * Falls back to mock data if OPENAI_API_KEY is not set.
+     * Analyze and summarize product reviews using Mistral AI.
+     * Falls back to mock data if MISTRAL_API_KEY is not set.
      */
-    static async analyzeReviews(productId: string, title: string): Promise<ReviewSummaryData> {
-        if (!process.env.OPENAI_API_KEY) {
-            console.warn("OPENAI_API_KEY not found. Falling back to mock sentiment data.");
+    static async analyzeReviews(productId: string, title: string, userApiKey?: string): Promise<ReviewSummaryData> {
+        const apiKey = userApiKey || process.env.MISTRAL_API_KEY;
+
+        if (!apiKey) {
+            console.warn("Mistral API key not provided. Falling back to mock sentiment data.");
             return this.mockAnalyze(productId, title);
         }
 
         try {
-            const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+            const client = new Mistral({ apiKey });
 
             const prompt = `You are an expert e-commerce product analyst.
 Analyze the sentiment for the product titled: "${title}".
@@ -39,13 +41,13 @@ Return exactly AND ONLY a JSON object with this shape, no markdown formatting:
   "reviewCount": 124
 }`;
 
-            const response = await openai.chat.completions.create({
-                model: 'gpt-4o-mini', // or whatever fast model is preferred
+            const response = await client.chat.complete({
+                model: 'mistral-small-latest',
                 messages: [{ role: 'user', content: prompt }],
-                response_format: { type: 'json_object' },
+                responseFormat: { type: 'json_object' },
             });
 
-            const content = response.choices[0].message.content || "{}";
+            const content = response.choices?.[0]?.message?.content?.toString() || "{}";
             const parsed = JSON.parse(content);
 
             return {
@@ -58,7 +60,7 @@ Return exactly AND ONLY a JSON object with this shape, no markdown formatting:
             };
 
         } catch (error) {
-            console.error("OpenAI mapping failed, falling back to mock:", error);
+            console.error("Mistral analysis failed, falling back to mock:", error);
             return this.mockAnalyze(productId, title);
         }
     }
