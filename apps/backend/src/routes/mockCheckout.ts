@@ -31,7 +31,7 @@ router.get('/:orderId', async (req, res) => {
             `);
         }
 
-        const itemsHtml = order.items.map(item => `
+        const itemsHtml = order.items.map((item: any) => `
             <div class="item">
                 <img src="${item.product.imageUrl || ''}" alt="Product" />
                 <div class="item-details">
