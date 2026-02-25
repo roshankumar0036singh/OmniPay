@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { TrendingDown, Globe, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { TrendingDown, Globe, AlertCircle, ShoppingCart, ExternalLink, Sparkles } from 'lucide-react';
+import { PremiumButton } from './PremiumButton';
+import { cn } from '../utils/cn';
 
 interface RegionPrice {
     region: string;
@@ -25,13 +28,11 @@ export const PriceCompare = ({ productTitle }: { productTitle: string }) => {
     useEffect(() => {
         const fetchComparison = async () => {
             try {
-                // In a real extension, use background script or proper API client.
-                // Hardcoding localhost for demo/hackathon purposes.
                 const res = await fetch('http://localhost:3000/api/price/compare', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer dev-token' // Mock auth
+                        'Authorization': 'Bearer dev-token'
                     },
                     body: JSON.stringify({ query: productTitle })
                 });
@@ -54,84 +55,123 @@ export const PriceCompare = ({ productTitle }: { productTitle: string }) => {
             }
         };
 
-        if (productTitle) {
-            fetchComparison();
-        }
+        if (productTitle) fetchComparison();
     }, [productTitle]);
 
     if (loading) {
         return (
-            <div className="bg-black/80 backdrop-blur-md border border-neon/30 p-4 rounded-xl shadow-neon w-80 font-mono animate-pulse">
-                <div className="h-4 bg-white/10 w-1/2 mb-4 rounded"></div>
-                <div className="space-y-2">
-                    <div className="h-8 bg-white/5 rounded"></div>
-                    <div className="h-8 bg-white/5 rounded"></div>
-                    <div className="h-8 bg-white/5 rounded"></div>
+            <div className="glass-panel p-5 rounded-2xl w-full max-w-[340px] animate-pulse space-y-4 shadow-glass border-white/5">
+                <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 bg-white/10 rounded-full" />
+                    <div className="h-4 bg-white/10 w-1/2 rounded" />
+                </div>
+                <div className="space-y-3">
+                    <div className="h-14 bg-white/5 rounded-xl" />
+                    <div className="h-14 bg-white/5 rounded-xl" />
                 </div>
             </div>
         );
     }
 
-    if (error || !data || data.prices.length <= 1) {
-        return null; // Don't show if no arbitrage opportunity found
-    }
+    if (error || !data || data.prices.length <= 1) return null;
 
     const regionFlags: Record<string, string> = {
-        'US': '🇺🇸', 'JP': '🇯🇵', 'DE': '🇩🇪', 'ES': '🇪🇸'
+        'US': '🇺🇸', 'JP': '🇯🇵', 'DE': '🇩🇪', 'ES': '🇪🇸', 'GB': '🇬🇧', 'FR': '🇫🇷'
     };
 
     return (
-        <div className="bg-black/90 backdrop-blur-xl border border-neon/50 p-4 rounded-xl shadow-neon w-[340px] font-sans text-white z-50">
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
-                <Globe className="text-neon" size={16} />
-                <h3 className="text-sm font-bold tracking-wide">Global Price Check</h3>
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-panel p-5 rounded-2xl w-full max-w-[340px] shadow-glass border-white/10 relative overflow-hidden"
+        >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/5">
+                <div className="flex items-center gap-2">
+                    <Globe className="text-neon" size={16} />
+                    <h3 className="text-[11px] font-black text-white italic uppercase tracking-wider">Global Price Intelligence</h3>
+                </div>
+                <div className="flex items-center gap-1.5 text-[8px] text-neon/70 font-black uppercase tracking-tighter">
+                    <Sparkles size={10} className="animate-pulse" /> Live Audit
+                </div>
             </div>
 
-            <div className="space-y-2 mb-4">
+            {/* List */}
+            <div className="space-y-2 mb-5">
                 {data.prices.map((item, idx) => {
                     const isBest = item.region === data.bestDeal.region;
                     return (
-                        <div
+                        <motion.div
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.1 }}
                             key={item.region}
-                            className={`flex items-center justify-between p-2 rounded-lg border \${isBest ? 'border-neon bg-neon/10' : 'border-white/5 bg-white/5'}`}
+                            className={cn(
+                                "flex items-center justify-between p-3 rounded-xl transition-all border",
+                                isBest
+                                    ? 'bg-neon/10 border-neon/30 shadow-neon/5'
+                                    : 'bg-white/5 border-white/5 hover:border-white/10'
+                            )}
                         >
-                            <div className="flex items-center gap-2">
-                                <span className="text-lg">{regionFlags[item.region] || '🌐'}</span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-xl filter drop-shadow-sm">{regionFlags[item.region] || '🌐'}</span>
                                 <div className="flex flex-col">
-                                    <span className="text-xs font-bold">{item.region}</span>
-                                    <span className="text-[10px] text-gray-400">{item.site}</span>
+                                    <span className="text-[10px] font-black text-white uppercase tracking-tighter">{item.region}</span>
+                                    <span className="text-[9px] text-gray-500 font-bold uppercase">{item.site}</span>
                                 </div>
                             </div>
 
                             <div className="flex flex-col items-end">
-                                <span className={`text-sm font-mono \${isBest ? 'text-neon font-bold' : 'text-gray-300'}`}>
-                                    ${item.priceUsd.toFixed(2)}
-                                </span>
-                                <span className="text-[10px] text-gray-500">
+                                <div className="flex items-center gap-1">
+                                    <span className={cn(
+                                        "text-xs font-black italic",
+                                        isBest ? 'text-neon' : 'text-white'
+                                    )}>
+                                        ${item.priceUsd.toFixed(2)}
+                                    </span>
+                                </div>
+                                <span className="text-[8px] text-gray-600 font-bold uppercase">
                                     {item.currency} {item.price.toLocaleString()}
                                 </span>
                             </div>
-                        </div>
+                        </motion.div>
                     );
                 })}
             </div>
 
-            {data.savingsPercent > 5 && (
-                <div className="bg-neon/10 border border-neon/30 rounded-lg p-2.5 flex items-start gap-2 mb-3">
-                    <TrendingDown className="text-neon shrink-0 mt-0.5" size={16} />
-                    <div className="flex flex-col">
-                        <span className="text-xs font-bold text-neon">Save {data.savingsPercent}% cross-border</span>
-                        <span className="text-[10px] text-gray-400">Buying from {regionFlags[data.bestDeal.region]} {data.bestDeal.region} is cheaper.</span>
-                    </div>
-                </div>
-            )}
+            {/* Insight / CTAs */}
+            <AnimatePresence>
+                {data.savingsPercent > 5 && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-grand-neon rounded-xl p-3 flex items-start gap-3 mb-4 shadow-neon/10"
+                    >
+                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 border border-white/20">
+                            <TrendingDown size={18} className="text-black" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[11px] font-black text-black italic uppercase leading-tight">Save {data.savingsPercent}% cross-border</span>
+                            <span className="text-[9px] text-black/60 font-bold leading-tight">Cheapest source found in {regionFlags[data.bestDeal.region]} {data.bestDeal.region} region.</span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-            <button
-                onClick={() => window.open(data.bestDeal.url, '_blank')}
-                className="w-full py-2 bg-neon hover:bg-white text-black text-xs font-bold uppercase tracking-wider rounded-lg transition-colors shadow-[0_0_10px_rgba(74,222,128,0.2)]"
-            >
-                View Best Deal →
-            </button>
-        </div>
+            <div className="flex gap-2">
+                <PremiumButton
+                    variant="neon"
+                    glow
+                    onClick={() => window.open(data.bestDeal.url, '_blank')}
+                    className="flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-2"
+                >
+                    Extract Deal <ExternalLink size={12} />
+                </PremiumButton>
+            </div>
+
+            {/* Background Decor */}
+            <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 bg-neon/5 blur-3xl rounded-full" />
+            <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-16 h-16 bg-neon/10 blur-2xl rounded-full" />
+        </motion.div>
     );
 };

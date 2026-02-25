@@ -7,6 +7,8 @@ interface Product {
     currency: string;
     imageUrl: string;
     siteId: string;
+    region?: string;
+    landedCost?: string;
 }
 
 export interface CartItem {
@@ -28,6 +30,7 @@ interface CartState {
     addToCart: (productId: number, quantity?: number) => Promise<void>;
     updateQuantity: (itemId: number, quantity: number) => Promise<void>;
     removeItem: (itemId: number) => Promise<void>;
+    clearCart: () => void;
     checkout: () => Promise<void>;
 }
 
@@ -112,6 +115,8 @@ export const useCartStore = create<CartState>((set, get) => ({
             console.error('Failed to remove item:', error);
         }
     },
+
+    clearCart: () => set({ items: [], total: 0 }),
 
     checkout: async () => {
         // Placeholder for Phase 13

@@ -1,3 +1,66 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-lingo-dark text-white font-sans antialiased;
+    }
+}
+
+@layer components {
+    .glass-panel {
+        @apply bg-dark-glass backdrop-blur-md border border-white/10 shadow-glass;
+    }
+
+    .glass-card {
+        @apply bg-white/5 backdrop-blur-sm border border-white/5 hover:border-white/10 transition-all duration-300;
+    }
+
+    .neon-text {
+        @apply text-neon shadow-neon;
+    }
+
+    .neon-button {
+        @apply bg-neon text-black font-bold py-2 px-4 rounded-lg hover:shadow-neon-strong transition-all duration-300 active:scale-95;
+    }
+
+    .neon-border-glow {
+        @apply border border-neon/30 hover:border-neon shadow-neon/10 hover:shadow-neon/30 transition-all duration-300;
+    }
+}
+
+/* Custom scrollbar for premium feel */
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-white/20 transition-all;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.animate-shimmer {
+    animation: shimmer 2s infinite linear;
+}
+
+.shadow-inner-glass {
+    box-shadow: inset 0 2px 4px 0 rgba(255, 255, 255, 0.05);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 2px;
+}

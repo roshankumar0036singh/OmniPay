@@ -17,6 +17,7 @@ export interface TranslateResponse {
     translated: string;
     sourceLang: string;
     targetLang: string;
+    cached?: boolean;
 }
 
 export interface BatchTranslateResponse {

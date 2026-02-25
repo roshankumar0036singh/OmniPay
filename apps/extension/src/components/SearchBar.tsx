@@ -1,11 +1,13 @@
 import { useState } from "react"
-import { Search, Globe, ChevronDown } from "lucide-react"
+import { Search, Globe, ChevronDown, Command } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { useTranslation } from "../hooks/useTranslation"
 import { useSearchStore } from '../stores/useSearchStore';
+import { PremiumButton } from "./PremiumButton"
+import { cn } from "../utils/cn"
 
 export const SearchBar = ({ onSearch }: { onSearch: (query: string) => void }) => {
   const { query, setQuery, activeRegions, toggleRegion } = useSearchStore();
-  const [showRegions, setShowRegions] = useState(false)
   const { t } = useTranslation()
 
   const regions = [
@@ -30,38 +32,56 @@ export const SearchBar = ({ onSearch }: { onSearch: (query: string) => void }) =
   };
 
   return (
-    <form onSubmit={handleSubmit} className="relative w-full z-20">
-      <div className="relative flex items-center bg-white/5 border border-white/10 rounded-2xl overflow-hidden focus-within:border-lingo-green transition-colors shadow-lg">
-        <Search className="absolute left-4 text-gray-400" size={18} />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={t('search.placeholder')}
-          className="w-full bg-transparent text-white pl-12 pr-24 py-4 text-sm focus:outline-none placeholder-gray-500"
-        />
-      </div>
+    <div className="relative w-full z-20 space-y-3">
+      <form onSubmit={handleSubmit} className="relative group">
+        <div className="relative flex items-center glass-panel rounded-2xl overflow-hidden focus-within:ring-1 focus-within:ring-neon/50 transition-all duration-300 shadow-glass">
+          <Search className="absolute left-4 text-gray-500 group-focus-within:text-neon transition-colors" size={18} />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={t('search.placeholder')}
+            className="w-full bg-transparent text-white pl-12 pr-12 py-4 text-sm focus:outline-none placeholder-gray-600 font-medium"
+          />
+          <div className="absolute right-3 flex items-center gap-2">
+            <PremiumButton variant="glass" size="icon" className="h-8 w-8 rounded-lg" type="submit">
+              <Command size={14} className="text-gray-400" />
+            </PremiumButton>
+          </div>
+        </div>
+      </form>
+
       {/* Region Toggles */}
-      <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 mt-2">
-        <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1">
-          <Globe size={10} /> Regions
-        </span>
-        {regions.map((region) => (
-          <button
-            key={region.id}
-            type="button"
-            onClick={() => toggleRegion(region.id)}
-            className={`px-2 py-1 rounded-md text-xs font-medium transition-all duration-200 border
-                    \${activeRegions.includes(region.id)
-                    ? 'bg-lingo-green/20 border-lingo-green/50 text-lingo-green shadow-[0_0_10px_rgba(74,222,128,0.2)]'
-                    : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10 hover:border-white/10'}`}
-            title={region.name}
-          >
-            {region.label} {region.id}
-          </button>
-        ))}
+      <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
+        <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-white/5 border border-white/5 mr-1">
+          <Globe size={12} className="text-neon" />
+          <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest whitespace-nowrap">Global</span>
+        </div>
+
+        <div className="flex gap-1.5">
+          {regions.map((region) => (
+            <motion.button
+              key={region.id}
+              type="button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => toggleRegion(region.id)}
+              className={cn(
+                "px-3 py-1.5 rounded-xl text-[10px] font-black transition-all duration-300 border flex items-center gap-2",
+                activeRegions.includes(region.id)
+                  ? 'bg-neon/10 border-neon/30 text-neon shadow-[0_0_15px_rgba(0,255,0,0.1)]'
+                  : 'bg-white/5 border-white/5 text-gray-500 hover:bg-white/10 hover:border-white/10'
+              )}
+              title={region.name}
+            >
+              <span className="text-sm leading-none">{region.label}</span>
+              <span>{region.id}</span>
+            </motion.button>
+          ))}
+        </div>
       </div>
-    </form>
+    </div>
   );
 };
+

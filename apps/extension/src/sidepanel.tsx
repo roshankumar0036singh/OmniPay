@@ -10,13 +10,22 @@ import { useSearchStore } from "./stores/useSearchStore"
 import { ApiClient } from "./services/apiClient"
 import { SupportProxy } from "./components/SupportProxy"
 import { useTranslation } from "./hooks/useTranslation"
+import { motion, AnimatePresence } from "framer-motion"
+import { Globe } from "lucide-react"
+import { PremiumButton } from "./components/PremiumButton"
+import { LanguageDropdown } from "./components/LanguageDropdown"
+import { ApiKeySettings } from "./components/ApiKeySettings"
+
+import { initExtensionTelemetry } from "./utils/telemetry"
 
 import "./style.css"
+
+initExtensionTelemetry()
 
 function SidePanel() {
     const [activeTab, setActiveTab] = useState("home")
     const { query, activeRegions, setResults, setLoading } = useSearchStore()
-    const { t } = useTranslation()
+    const { t, locale, changeLanguage } = useTranslation()
 
     const handleSearch = async () => {
         if (!query.trim()) return
@@ -41,81 +50,123 @@ function SidePanel() {
             <div className="relative z-10 flex flex-col h-full">
                 <Header />
 
-                <main className="flex-1 overflow-y-auto p-4 scrollbar-hide">
-                    {activeTab === 'home' && (
-                        <div className="space-y-6">
-                            {/* Hero / Welcome */}
-                            <div className="text-center mb-6">
-                                <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                                    {t('home.title')}
-                                </h2>
-                                <p className="text-sm text-gray-400">{t('home.subtitle')}</p>
-                            </div>
+                <main className="flex-1 overflow-y-auto p-4 scrollbar-hide pb-40">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={activeTab}
+                            initial={{ opacity: 0, x: 5 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -5 }}
+                            transition={{ duration: 0.2 }}
+                            className="h-full"
+                        >
+                            {activeTab === 'home' && (
+                                <div className="space-y-6">
+                                    <div className="text-center mb-8 pt-4">
+                                        <motion.h2
+                                            initial={{ scale: 0.9, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40 italic uppercase tracking-tighter"
+                                        >
+                                            {t('home.title')}
+                                        </motion.h2>
+                                        <p className="text-[10px] text-neon/60 font-black uppercase tracking-[0.3em] mt-1">{t('home.subtitle')}</p>
+                                    </div>
 
-                            {/* Quick Search */}
-                            <SearchBar onSearch={handleSearch} />
+                                    <SearchBar onSearch={handleSearch} />
 
-                            {/* Trending / Feed */}
-                            <div className="space-y-4 pt-4">
-                                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('home.trending')}</h3>
-                                <ProductCard
-                                    id="trending-1"
-                                    title="Sony WH-1000XM5 Wireless Headphones"
-                                    price="¥49,800"
-                                    image="https://m.media-amazon.com/images/I/41Kx5gZ-20L._AC_SY580_.jpg"
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'search' && (
-                        <div className="space-y-4 h-full flex flex-col">
-                            <SearchBar onSearch={handleSearch} />
-                            <div className="flex-1">
-                                <SearchResults />
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'support' && (
-                        <div className="h-full flex items-center justify-center p-2">
-                            <SupportProxy />
-                        </div>
-                    )}
-
-                    {activeTab === 'settings' && (
-                        <div className="flex flex-col items-center justify-center h-full space-y-4 p-4">
-                            <h3 className="text-lg font-bold w-full text-center border-b border-white/10 pb-4 mb-4">{t('settings.title')}</h3>
-
-                            <div className="w-full bg-white/5 border border-white/10 rounded-xl p-4 flex justify-between items-center">
-                                <span className="text-sm text-gray-300">{t('settings.language')}</span>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => {
-                                            localStorage.setItem('omnipay-locale', 'en');
-                                            window.location.reload();
-                                        }}
-                                        className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded border border-white/20 text-xs"
-                                    >
-                                        EN 🇺🇸
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            localStorage.setItem('omnipay-locale', 'ja');
-                                            window.location.reload();
-                                        }}
-                                        className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded border border-white/20 text-xs"
-                                    >
-                                        JA 🇯🇵
-                                    </button>
+                                    <div className="space-y-4 pt-6">
+                                        <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                            <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{t('home.trending')}</h3>
+                                            <span className="text-[9px] text-neon font-bold cursor-pointer hover:underline">View All</span>
+                                        </div>
+                                        <ProductCard
+                                            id="trending-1"
+                                            title="Sony WH-1000XM5 Wireless Headphones"
+                                            price="¥49,800"
+                                            image="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop"
+                                            region="JP"
+                                            site="Amazon"
+                                            landedCost="340.50"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    )}
+                            )}
+
+                            {activeTab === 'search' && (
+                                <div className="space-y-4 h-full flex flex-col">
+                                    <SearchBar onSearch={handleSearch} />
+                                    <div className="flex-1 mt-2">
+                                        <SearchResults />
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'cart' && (
+                                <div className="h-full flex flex-col">
+                                    <div className="mb-6">
+                                        <h3 className="text-xl font-black text-white italic uppercase">{t('nav.cart')}</h3>
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Review your selection</p>
+                                    </div>
+                                    <div className="flex-1 overflow-y-auto scrollbar-hide">
+                                        <CartDrawer embedded />
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'support' && (
+                                <div className="h-full">
+                                    <div className="mb-6">
+                                        <h3 className="text-xl font-black text-white italic uppercase">{t('nav.support')}</h3>
+                                        <p className="text-[10px] text-neon/60 font-bold uppercase tracking-widest">Global Intelligence Help</p>
+                                    </div>
+                                    <SupportProxy />
+                                </div>
+                            )}
+
+                            {activeTab === 'settings' && (
+                                <div className="flex flex-col space-y-8">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex flex-col">
+                                            <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter leading-none">{t('settings.title')}</h3>
+                                            <p className="text-[10px] text-neon/60 font-black uppercase tracking-[0.3em] mt-1">Terminal Persistence</p>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-xl bg-neon/10 border border-neon/20 flex items-center justify-center">
+                                            <Globe size={18} className="text-neon" />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-10">
+                                        {/* Language Module */}
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] whitespace-nowrap">{t('settings.language')}</h4>
+                                                <div className="h-[1px] w-12 bg-white/5" />
+                                            </div>
+                                            <LanguageDropdown
+                                                currentLocale={locale}
+                                                onSelect={changeLanguage}
+                                            />
+                                        </div>
+
+                                        {/* API Module */}
+                                        <ApiKeySettings />
+
+                                        <div className="pt-4 pb-8 flex flex-col items-center gap-2">
+                                            <div className="w-1 h-1 rounded-full bg-white/10" />
+                                            <div className="w-1 h-1 rounded-full bg-white/10" />
+                                            <div className="w-1 h-1 rounded-full bg-white/10" />
+                                            <p className="text-[8px] text-gray-700 font-black uppercase tracking-[0.4em] mt-2">OmniPay Protocol v2.4.0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
                 </main>
 
                 <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
-                <CartDrawer />
             </div>
         </div>
     )

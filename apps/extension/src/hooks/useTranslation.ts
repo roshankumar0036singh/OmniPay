@@ -1,28 +1,42 @@
 import { useState, useEffect } from 'react';
 import en from '../locales/en.json';
 import ja from '../locales/ja.json';
+import es from '../locales/es.json';
+import zh from '../locales/zh.json';
+import fr from '../locales/fr.json';
 
 const translations: Record<string, Record<string, string>> = {
-    en,
-    ja
+    en, ja, es, zh, fr
+    // Other 20+ locales will fallback to English until their JSON files are created
 };
 
 export const useTranslation = () => {
-    // Default to 'en' for now. In a real app, read from chrome.storage or browser navigator.language
     const [locale, setLocale] = useState('en');
 
     useEffect(() => {
-        // Mock loading locale from storage
-        const savedLocale = localStorage.getItem('omnipay-locale');
-        if (savedLocale && translations[savedLocale]) {
-            setLocale(savedLocale);
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+            chrome.storage.local.get(['omnipay-locale'], (result) => {
+                if (result['omnipay-locale']) {
+                    setLocale(result['omnipay-locale']);
+                }
+            });
+        } else {
+            const savedLocale = localStorage.getItem('omnipay-locale');
+            if (savedLocale) {
+                setLocale(savedLocale);
+            }
         }
     }, []);
 
     const changeLanguage = (lang: string) => {
-        if (translations[lang]) {
-            setLocale(lang);
+        setLocale(lang);
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+            chrome.storage.local.set({ 'omnipay-locale': lang }, () => {
+                window.location.reload();
+            });
+        } else {
             localStorage.setItem('omnipay-locale', lang);
+            window.location.reload();
         }
     };
 

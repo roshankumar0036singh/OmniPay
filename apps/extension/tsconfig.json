@@ -15,6 +15,6 @@
     ".plasmo/index.d.ts",
     "./**/*.ts",
     "./**/*.tsx",
-    "./locales/*.json"
+    "./src/locales/*.json"
   ]
 }
