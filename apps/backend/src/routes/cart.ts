@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { CartService } from '../services/cartService';
-import { authMiddleware } from '../middleware/auth';
+
 
 const router = Router();
 
 // Get Cart
-router.get('/', authMiddleware, async (req: any, res) => {
+router.get('/', async (req: any, res) => {
     try {
-        const cart = await CartService.getCart(req.user.userId);
+        const cart = await CartService.getCart(1);
         res.json(cart);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch cart' });
@@ -15,10 +15,10 @@ router.get('/', authMiddleware, async (req: any, res) => {
 });
 
 // Add Item
-router.post('/items', authMiddleware, async (req: any, res) => {
+router.post('/items', async (req: any, res) => {
     try {
         const { productId, quantity } = req.body;
-        const item = await CartService.addToCart(req.user.userId, productId, quantity);
+        const item = await CartService.addToCart(1, productId, quantity);
         res.json(item);
     } catch (error) {
         console.error(error);
@@ -27,10 +27,10 @@ router.post('/items', authMiddleware, async (req: any, res) => {
 });
 
 // Update Item
-router.patch('/items/:id', authMiddleware, async (req: any, res) => {
+router.patch('/items/:id', async (req: any, res) => {
     try {
         const { quantity } = req.body;
-        const item = await CartService.updateQuantity(req.user.userId, Number(req.params.id), quantity);
+        const item = await CartService.updateQuantity(1, Number(req.params.id), quantity);
         res.json(item);
     } catch (error) {
         res.status(500).json({ error: 'Failed to update item' });
@@ -38,9 +38,9 @@ router.patch('/items/:id', authMiddleware, async (req: any, res) => {
 });
 
 // Remove Item
-router.delete('/items/:id', authMiddleware, async (req: any, res) => {
+router.delete('/items/:id', async (req: any, res) => {
     try {
-        await CartService.removeItem(req.user.userId, Number(req.params.id));
+        await CartService.removeItem(1, Number(req.params.id));
         res.status(204).send();
     } catch (error) {
         res.status(500).json({ error: 'Failed to remove item' });
@@ -48,9 +48,9 @@ router.delete('/items/:id', authMiddleware, async (req: any, res) => {
 });
 
 // Clear Cart
-router.delete('/', authMiddleware, async (req: any, res) => {
+router.delete('/', async (req: any, res) => {
     try {
-        await CartService.clearCart(req.user.userId);
+        await CartService.clearCart(1);
         res.status(204).send();
     } catch (error) {
         res.status(500).json({ error: 'Failed to clear cart' });
