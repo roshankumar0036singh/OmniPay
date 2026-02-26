@@ -1,0 +1,17 @@
+{
+    "home.title": "OmniPay",
+    "home.subtitle": "像本地人一樣在全球購物。",
+    "home.trending": "熱門趨勢",
+    "nav.home": "首頁",
+    "nav.search": "搜索",
+    "nav.support": "客服",
+    "nav.settings": "設置",
+    "search.placeholder": "全球搜索...",
+    "product.addToCart": "添加到全球購物車",
+    "support.tickets": "客服工單",
+    "support.noTickets": "沒有活動工單。",
+    "support.newInquiry": "新諮詢...",
+    "support.autoTranslating": "自動翻譯中",
+    "settings.title": "語言設置",
+    "settings.language": "應用語言"
+}

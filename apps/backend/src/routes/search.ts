@@ -1,10 +1,9 @@
 import { Router } from 'express';
 import { SearchService } from '../services/searchService';
-import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { query, regions } = req.body;
 

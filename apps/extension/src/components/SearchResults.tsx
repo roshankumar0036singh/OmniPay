@@ -15,10 +15,14 @@ export const SearchResults = () => {
 
     if (!isLoading && results.length === 0 && query.length > 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-10 text-gray-500 text-center">
-                <p className="mb-2 text-xl">🌍</p>
-                <p>No global results found.</p>
-                <p className="text-xs mt-2">Try adjusting your region filters.</p>
+            <div className="flex flex-col items-center justify-center p-10 text-center border border-white/5 border-dashed rounded-3xl bg-white/5 backdrop-blur-sm mt-4">
+                <div className="w-12 h-12 rounded-full bg-neon/5 border border-neon/10 flex items-center justify-center mb-4">
+                    <span className="w-1.5 h-1.5 bg-neon rounded-full animate-pulse shadow-neon" />
+                </div>
+                <h3 className="text-sm font-black text-white italic uppercase tracking-tighter">No Intel Found</h3>
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-2 max-w-[200px]">
+                    Global node scan complete. Consider adjusting region parameters.
+                </p>
             </div>
         );
     }

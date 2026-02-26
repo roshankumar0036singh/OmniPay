@@ -11,7 +11,8 @@ router.post('/scan', async (req: any, res) => {
             return res.status(400).json({ error: 'productId and title are required' });
         }
 
-        const report = await EthicalScannerService.scanProduct(productId, title, description);
+        const userApiKey = req.headers['x-mistral-key'] as string | undefined;
+        const report = await EthicalScannerService.scanProduct(productId, title, description, userApiKey);
         res.json(report);
     } catch (error: any) {
         res.status(500).json({ error: error.message || 'Failed to scan product' });

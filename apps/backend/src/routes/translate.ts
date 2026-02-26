@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { LingoService } from '../integrations/lingoService';
-import { authMiddleware } from '../middleware/auth';
+
 
 const router = Router();
 const lingoService = LingoService.getInstance();
 
 // Single translation endpoint
-router.post('/translate', authMiddleware, async (req, res) => {
+router.post('/translate', async (req, res) => {
     try {
         const { text, targetLang, sourceLang, context } = req.body;
 
@@ -14,7 +14,8 @@ router.post('/translate', authMiddleware, async (req, res) => {
             return res.status(400).json({ error: 'Missing text or targetLang' });
         }
 
-        const result = await lingoService.translate({ text, targetLang, sourceLang, context });
+        const userApiKey = req.headers['x-lingo-key'] as string | undefined;
+        const result = await lingoService.translate({ text, targetLang, sourceLang, context }, userApiKey);
         res.json(result);
     } catch (error) {
         console.error('Translation error:', error);
@@ -23,7 +24,7 @@ router.post('/translate', authMiddleware, async (req, res) => {
 });
 
 // Batch translation endpoint
-router.post('/translate/batch', authMiddleware, async (req, res) => {
+router.post('/translate/batch', async (req, res) => {
     try {
         const { texts, targetLang, sourceLang, context } = req.body;
 
@@ -31,7 +32,8 @@ router.post('/translate/batch', authMiddleware, async (req, res) => {
             return res.status(400).json({ error: 'Invalid batch request' });
         }
 
-        const result = await lingoService.translateBatch({ texts, targetLang, sourceLang, context });
+        const userApiKey = req.headers['x-lingo-key'] as string | undefined;
+        const result = await lingoService.translateBatch({ texts, targetLang, sourceLang, context }, userApiKey);
         res.json(result);
     } catch (error) {
         console.error('Batch translation error:', error);
@@ -40,7 +42,7 @@ router.post('/translate/batch', authMiddleware, async (req, res) => {
 });
 
 // Language detection endpoint
-router.post('/detect', authMiddleware, async (req, res) => {
+router.post('/detect', async (req, res) => {
     try {
         const { text } = req.body;
         if (!text) return res.status(400).json({ error: 'Missing text' });

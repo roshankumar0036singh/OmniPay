@@ -5,32 +5,41 @@ module.exports = {
         extend: {
             colors: {
                 neon: {
-                    DEFAULT: "#00FF00", // Classic Terminal Green (Brighter)
+                    DEFAULT: "#00FF00",
                     hover: "#33FF33",
                     dim: "rgba(0, 255, 0, 0.1)",
-                    dark: "#003300" // Darker Green for backgrounds
+                    dark: "#001A00"
                 },
                 dark: {
                     bg: "#050505",
-                    card: "#121212",
-                    border: "#333333"
+                    card: "#0F0F0F",
+                    border: "#1A1A1A",
+                    glass: "rgba(10, 10, 10, 0.7)"
                 },
-                'lingo-green': '#4ade80', // Vibrant green
-                'lingo-dark': '#0a0a0a',  // Deep void black
-                'lingo-card': '#111111',  // Slightly lighter card bg
-                'lingo-border': '#222222', // Subtle border
+                'lingo-green': '#4ade80',
+                'lingo-dark': '#070707',
+                'lingo-card': '#0F0F0F',
+                'lingo-border': '#1F1F1F',
             },
             fontFamily: {
-                sans: ['Inter', 'sans-serif'], // Clean modern font
+                sans: ['Inter', 'Space Grotesk', 'sans-serif'],
+            },
+            backgroundImage: {
+                'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%)',
+                'neon-gradient': 'linear-gradient(90deg, #00FF00 0%, #33FF33 100%)',
             },
             boxShadow: {
-                'neon': '0 0 5px #00FF00, 0 0 10px #00FF00', // Glow effect
-                'crt': 'inset 0 0 20px rgba(0, 255, 0, 0.1)', // CRT Screen effect
-                'lingo-glow': '0 0 20px rgba(74, 222, 128, 0.4)', // Green glow
-                'lingo-card': '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)',
+                'neon': '0 0 15px rgba(0, 255, 0, 0.3)',
+                'neon-strong': '0 0 25px rgba(0, 255, 0, 0.5)',
+                'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.8)',
+                'lingo-glow': '0 0 25px rgba(74, 222, 128, 0.2)',
+            },
+            backdropBlur: {
+                'xs': '2px',
             },
             animation: {
                 'data-flow': 'dash 20s linear infinite',
+                'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             },
             keyframes: {
                 dash: {
@@ -42,3 +51,4 @@ module.exports = {
     },
     plugins: [],
 }
+

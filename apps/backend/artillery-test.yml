@@ -1,0 +1,28 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: Warm up phase
+    - duration: 120
+      arrivalRate: 10
+      rampTo: 50
+      name: Ramp up phase
+    - duration: 300
+      arrivalRate: 50
+      name: Sustained load phase
+  payload:
+    path: "test-data.csv"
+    fields:
+      - "query"
+
+scenarios:
+  - name: "Search flow"
+    flow:
+      - get:
+          url: "/health"
+      - post:
+          url: "/api/search"
+          json:
+            query: "{{ query }}"
+            regions: ["US", "JP"]

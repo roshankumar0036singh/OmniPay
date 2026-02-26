@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Send, Globe, RefreshCw } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MessageSquare, Send, Globe, RefreshCw, X, ArrowLeft } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
+import { PremiumButton } from './PremiumButton';
+import { cn } from '../utils/cn';
 
 interface TicketMessage {
     id: string;
@@ -42,7 +45,7 @@ export const SupportProxy = ({ productId, title }: { productId?: string, title?:
 
     useEffect(() => {
         fetchTickets();
-        const interval = setInterval(fetchTickets, 3000); // Poll for random seller responses
+        const interval = setInterval(fetchTickets, 3000);
         return () => clearInterval(interval);
     }, []);
 
@@ -115,104 +118,156 @@ export const SupportProxy = ({ productId, title }: { productId?: string, title?:
         if (!activeTicket) return null;
 
         return (
-            <div className="flex flex-col h-full">
-                <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
-                    <button onClick={() => setActiveTicket(null)} className="text-gray-400 hover:text-neon text-xs">← Back</button>
-                    <h3 className="text-sm font-bold truncate flex-1">{activeTicket.subject}</h3>
-                    <div className="flex items-center gap-1 text-[10px] text-neon bg-neon/10 px-2 py-0.5 rounded border border-neon/30">
-                        <Globe size={10} /> Auto-Translating
+            <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex flex-col h-full"
+            >
+                <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/5">
+                    <PremiumButton variant="glass" size="icon" onClick={() => setActiveTicket(null)} className="h-8 w-8 hover:bg-white/5 rounded-full">
+                        <ArrowLeft size={16} className="text-gray-400" />
+                    </PremiumButton>
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-black truncate text-white italic truncate">{activeTicket.subject}</h3>
+                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{activeTicket.id}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[8px] text-neon bg-neon/10 px-2 py-1 rounded-full border border-neon/20 font-black uppercase tracking-tighter shadow-neon/10">
+                        <Globe size={10} /> Live Translate
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto space-y-3 mb-3 pr-2 custom-scrollbar">
-                    {activeTicket.messages.map((msg) => (
-                        <div key={msg.id} className={`flex flex-col \${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
-                            <div className={`max-w-[85%] rounded-lg p-2 \${msg.sender === 'user' ? 'bg-neon/20 border border-neon/30 text-right' : 'bg-white/10 border border-white/20'}`}>
-                                <p className="text-sm">{msg.originalText}</p>
-                                <p className="text-[10px] text-gray-400 mt-1 italic border-t border-white/10 pt-1">
-                                    {msg.translatedText}
-                                </p>
+                <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-1 scrollbar-hide">
+                    {activeTicket.messages.map((msg, idx) => (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.05 }}
+                            key={msg.id}
+                            className={cn("flex flex-col", msg.sender === 'user' ? 'items-end' : 'items-start')}
+                        >
+                            <div className={cn(
+                                "max-w-[85%] rounded-2xl p-3 shadow-glass",
+                                msg.sender === 'user'
+                                    ? 'bg-neon/10 border border-neon/20 text-right rounded-tr-none'
+                                    : 'glass-panel border-white/5 rounded-tl-none'
+                            )}>
+                                <p className="text-sm font-medium leading-relaxed">{msg.originalText}</p>
+                                <div className="mt-2 pt-2 border-t border-white/5 opacity-50 flex items-center gap-1.5">
+                                    <Globe size={10} className="text-neon" />
+                                    <p className="text-[10px] italic font-medium">
+                                        {msg.translatedText}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                            <span className="text-[8px] text-gray-600 mt-1 uppercase font-black px-1">
+                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                        </motion.div>
                     ))}
                     <div ref={messagesEndRef} />
                 </div>
 
-                <div className="flex gap-2 relative">
+                <div className="flex gap-2 p-2 bg-white/5 rounded-2xl border border-white/10 group focus-within:border-neon/30 transition-all">
                     <input
                         type="text"
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleReply()}
-                        placeholder="Type message in English..."
-                        className="flex-1 bg-black border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-neon transition-colors"
+                        placeholder="Type in English..."
+                        className="flex-1 bg-transparent border-none px-2 py-1 text-sm focus:outline-none placeholder:text-gray-600 font-medium text-white"
                         disabled={loading || activeTicket.status === 'closed'}
                     />
-                    <button
+                    <PremiumButton
+                        variant="neon"
+                        size="icon"
                         onClick={handleReply}
                         disabled={loading || !inputText.trim() || activeTicket.status === 'closed'}
-                        className="bg-neon text-black p-2 rounded-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed hidden md:block" // Hidden on very small screens for compact mode
+                        className="h-8 w-8 rounded-xl shrink-0"
                     >
-                        {loading ? <RefreshCw className="animate-spin" size={18} /> : <Send size={18} />}
-                    </button>
+                        {loading ? <RefreshCw className="animate-spin" size={14} /> : <Send size={14} />}
+                    </PremiumButton>
                 </div>
-            </div>
+            </motion.div>
         );
     };
 
     const renderList = () => (
-        <div className="flex flex-col h-full">
-            <h3 className="text-sm font-bold mb-3 flex items-center gap-2">
-                <MessageSquare className="text-neon" size={16} /> Support Tickets
-            </h3>
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col h-full"
+        >
+            <div className="flex items-center justify-between mb-6">
+                <div>
+                    <h3 className="text-base font-black text-white italic uppercase tracking-tight">Active Tickets</h3>
+                    <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em]">{tickets.length} total inquiries</p>
+                </div>
+                <PremiumButton variant="glass" size="icon" onClick={fetchTickets} className="h-8 w-8 rounded-full border-white/10">
+                    <RefreshCw size={14} className={loading ? "animate-spin" : "text-gray-400"} />
+                </PremiumButton>
+            </div>
 
-            <div className="flex-1 overflow-y-auto space-y-2 mb-3 custom-scrollbar">
-                {tickets.length === 0 ? (
-                    <div className="text-center text-gray-500 text-xs py-4">No active tickets.</div>
-                ) : (
-                    tickets.map(ticket => (
-                        <div
-                            key={ticket.id}
-                            onClick={() => setActiveTicket(ticket)}
-                            className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 cursor-pointer transition-colors"
-                        >
-                            <div className="flex justify-between items-start mb-1">
-                                <span className="text-xs font-bold truncate flex-1 pr-2">{ticket.subject}</span>
-                                <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider \${ticket.status === 'open' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
-                                    {ticket.status}
-                                </span>
-                            </div>
-                            <p className="text-[11px] text-gray-400 truncate">
-                                {ticket.messages[ticket.messages.length - 1]?.originalText || "No messages"}
-                            </p>
+            <div className="flex-1 overflow-y-auto space-y-3 mb-6 pr-1 scrollbar-hide">
+                <AnimatePresence>
+                    {tickets.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 opacity-30">
+                            <MessageSquare size={32} className="mb-2" />
+                            <p className="text-xs font-bold uppercase tracking-widest">No active tickets</p>
                         </div>
-                    ))
-                )}
+                    ) : (
+                        tickets.map((ticket, idx) => (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: idx * 0.1 }}
+                                key={ticket.id}
+                                onClick={() => setActiveTicket(ticket)}
+                                className="glass-panel hover:bg-white/5 border-white/5 hover:border-white/10 p-4 cursor-pointer transition-all group relative overflow-hidden"
+                            >
+                                <div className="flex justify-between items-start mb-2">
+                                    <span className="text-xs font-black text-white italic uppercase truncate flex-1 pr-4">{ticket.subject}</span>
+                                    <span className={cn(
+                                        "text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border",
+                                        ticket.status === 'open' ? 'bg-neon/10 text-neon border-neon/20 shadow-neon/10' : 'bg-gray-500/10 text-gray-500 border-white/10'
+                                    )}>
+                                        {ticket.status}
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-gray-500 font-medium truncate opacity-60 group-hover:opacity-100 transition-opacity">
+                                    {ticket.messages[ticket.messages.length - 1]?.originalText || "Awaiting support..."}
+                                </p>
+                                <div className="absolute inset-x-0 bottom-0 h-[2px] bg-neon opacity-0 group-hover:opacity-100 transition-opacity shadow-neon" />
+                            </motion.div>
+                        ))
+                    )}
+                </AnimatePresence>
             </div>
 
-            <div className="flex gap-2">
-                <input
-                    type="text"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleCreateTicket()}
-                    placeholder={t('support.newInquiry')}
-                    className="flex-1 bg-black border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-neon transition-colors"
-                    disabled={loading}
-                />
-                <button
-                    onClick={handleCreateTicket}
-                    disabled={loading || !inputText.trim()}
-                    className="bg-neon text-black p-2 rounded-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {loading ? <RefreshCw className="animate-spin" size={18} /> : <Send size={18} />}
-                </button>
+            <div className="space-y-3">
+                <div className="relative">
+                    <textarea
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        placeholder={t('support.newInquiry')}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-neon/30 transition-all min-h-[80px] resize-none font-medium text-white placeholder:text-gray-600"
+                        disabled={loading}
+                    />
+                    <PremiumButton
+                        variant="neon"
+                        glow
+                        onClick={handleCreateTicket}
+                        disabled={loading || !inputText.trim()}
+                        className="absolute bottom-3 right-3 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest"
+                    >
+                        {loading ? <RefreshCw className="animate-spin" size={14} /> : "Submit"}
+                    </PremiumButton>
+                </div>
             </div>
-        </div>
+        </motion.div>
     );
 
     return (
-        <div className="bg-black/95 backdrop-blur-2xl border border-neon/50 p-4 rounded-xl shadow-[0_0_30px_rgba(74,222,128,0.15)] w-[360px] h-[450px] font-sans text-white z-50 overflow-hidden flex flex-col pointer-events-auto">
+        <div className="w-full h-full flex flex-col font-sans">
             {activeTicket ? renderChat() : renderList()}
         </div>
     );

@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
-import { MessageSquareText, ThumbsUp, ThumbsDown, Star, ChevronDown, ChevronUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MessageSquareText, ThumbsUp, ThumbsDown, Star, ChevronDown, ChevronUp, Sparkles, Quote } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
+import { PremiumButton } from './PremiumButton';
+import { ApiClient } from '../services/apiClient';
+import { cn } from '../utils/cn';
 
 interface ReviewSummaryData {
     productId: string;
@@ -14,21 +19,13 @@ export const ReviewSummary = ({ productId, title }: { productId: string, title: 
     const [data, setData] = useState<ReviewSummaryData | null>(null);
     const [loading, setLoading] = useState(true);
     const [expanded, setExpanded] = useState(false);
+    const { t } = useTranslation();
 
     useEffect(() => {
         const fetchSentiment = async () => {
             try {
-                const res = await fetch('http://localhost:3000/api/sentiment/analyze', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer dev-token'
-                    },
-                    body: JSON.stringify({ productId, title })
-                });
-
-                if (res.ok) {
-                    const result = await res.json();
+                const result = await ApiClient.analyzeSentiment(productId, title);
+                if (result) {
                     setData(result);
                 }
             } catch (e) {
@@ -38,83 +35,125 @@ export const ReviewSummary = ({ productId, title }: { productId: string, title: 
             }
         };
 
-        if (productId && title) {
-            fetchSentiment();
-        }
+        if (productId && title) fetchSentiment();
     }, [productId, title]);
 
-    if (loading) return null;
-    if (!data) return null;
+    if (loading || !data) return null;
 
     const renderStars = (rating: number) => {
         return Array.from({ length: 5 }).map((_, i) => (
             <Star
                 key={i}
-                size={14}
-                className={i < Math.round(rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-600"}
+                size={12}
+                className={cn(
+                    "transition-all",
+                    i < Math.round(rating) ? "text-neon fill-neon drop-shadow-neon" : "text-gray-700"
+                )}
             />
         ));
     };
 
     return (
-        <div className="bg-black/90 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-2xl w-[320px] font-sans text-white z-50">
-            {/* Header */}
+        <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass-panel w-full max-w-[340px] shadow-glass border-white/5 overflow-hidden"
+        >
+            {/* Header / Summary */}
             <div
-                className="flex items-center justify-between cursor-pointer"
+                className="p-4 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-all group"
                 onClick={() => setExpanded(!expanded)}
             >
-                <div className="flex items-center gap-2">
-                    <MessageSquareText className="text-neon" size={18} />
-                    <h3 className="text-sm font-bold tracking-wide">Community Sentiment</h3>
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <MessageSquareText className="text-neon" size={20} />
+                        <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }} className="absolute -top-1 -right-1 w-2 h-2 bg-neon rounded-full blur-[2px]" />
+                    </div>
+                    <div>
+                        <h3 className="text-[11px] font-black text-white italic uppercase tracking-wider">AI Consensus</h3>
+                        <div className="flex items-center gap-1 mt-0.5">
+                            {renderStars(data.avgRating)}
+                            <span className="text-[9px] font-bold text-gray-500 ml-1">({data.reviewCount} Reports)</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                        {renderStars(data.avgRating)}
-                    </div>
-                    <span className="text-xs font-mono text-gray-400">({data.reviewCount})</span>
-                    {expanded ? <ChevronUp size={16} className="text-gray-500 ml-1" /> : <ChevronDown size={16} className="text-gray-500 ml-1" />}
+                    <motion.div
+                        animate={{ rotate: expanded ? 180 : 0 }}
+                        className="p-1.5 rounded-full bg-white/5 group-hover:bg-white/10"
+                    >
+                        <ChevronDown size={14} className="text-gray-500" />
+                    </motion.div>
                 </div>
             </div>
 
-            {/* Details */}
-            {expanded && (
-                <div className="mt-3 pt-3 border-t border-white/10 space-y-4">
+            {/* Expanded Content */}
+            <AnimatePresence>
+                {expanded && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="border-t border-white/5"
+                    >
+                        <div className="p-4 space-y-5">
+                            {/* Consensus Card */}
+                            <div className="relative p-4 rounded-2xl bg-white/5 border border-white/5 overflow-hidden">
+                                <Quote className="absolute -top-2 -left-2 text-neon/10 w-12 h-12" />
+                                <p className="text-[11px] font-medium text-gray-300 leading-relaxed italic z-10 relative">
+                                    {data.consensus}
+                                </p>
+                            </div>
 
-                    <div className="bg-white/5 border border-white/10 p-2.5 rounded-lg">
-                        <p className="text-xs text-gray-300 leading-relaxed">
-                            {data.consensus}
-                        </p>
-                    </div>
+                            {/* Pros & Cons Grid */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-1.5 text-neon">
+                                        <ThumbsUp size={12} />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">Strengths</span>
+                                    </div>
+                                    <ul className="space-y-1.5">
+                                        {data.pros.map((pro, idx) => (
+                                            <motion.li
+                                                initial={{ opacity: 0, x: -5 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: idx * 0.1 }}
+                                                key={idx}
+                                                className="text-[10px] text-gray-500 font-medium flex items-center gap-1.5"
+                                            >
+                                                <div className="w-1 h-1 bg-neon/30 rounded-full" />
+                                                {pro}
+                                            </motion.li>
+                                        ))}
+                                    </ul>
+                                </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        {/* Pros */}
-                        <div className="space-y-1.5">
-                            <span className="text-[10px] font-bold text-green-400 uppercase tracking-wider flex items-center gap-1">
-                                <ThumbsUp size={12} /> Pros
-                            </span>
-                            <ul className="text-xs text-gray-400 space-y-1 pl-1 border-l-2 border-green-500/30">
-                                {data.pros.map((pro, idx) => (
-                                    <li key={idx}>• {pro}</li>
-                                ))}
-                            </ul>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-1.5 text-gray-500">
+                                        <ThumbsDown size={12} />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">Cautions</span>
+                                    </div>
+                                    <ul className="space-y-1.5">
+                                        {data.cons.map((con, idx) => (
+                                            <motion.li
+                                                initial={{ opacity: 0, x: -5 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: idx * 0.1 }}
+                                                key={idx}
+                                                className="text-[10px] text-gray-700 font-medium flex items-center gap-1.5"
+                                            >
+                                                <div className="w-1 h-1 bg-white/10 rounded-full" />
+                                                {con}
+                                            </motion.li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
-
-                        {/* Cons */}
-                        <div className="space-y-1.5">
-                            <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider flex items-center gap-1">
-                                <ThumbsDown size={12} /> Cons
-                            </span>
-                            <ul className="text-xs text-gray-400 space-y-1 pl-1 border-l-2 border-red-500/30">
-                                {data.cons.map((con, idx) => (
-                                    <li key={idx}>• {con}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-
-                </div>
-            )}
-        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
     );
 };

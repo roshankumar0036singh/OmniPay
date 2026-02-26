@@ -11,7 +11,8 @@ router.post('/analyze', async (req: any, res) => {
             return res.status(400).json({ error: 'productId and title are required' });
         }
 
-        const summary = await SentimentService.analyzeReviews(productId, title);
+        const userApiKey = req.headers['x-mistral-key'] as string | undefined;
+        const summary = await SentimentService.analyzeReviews(productId, title, userApiKey);
         res.json(summary);
     } catch (error: any) {
         res.status(500).json({ error: error.message || 'Failed to analyze sentiment' });

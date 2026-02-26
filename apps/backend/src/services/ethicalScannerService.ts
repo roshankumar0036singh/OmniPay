@@ -1,8 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-import OpenAI from 'openai';
-
-const prisma = new PrismaClient();
-
+import { Mistral } from '@mistralai/mistralai';
 export interface EthicalReport {
     productId: string;
     score: number; // 0-100
@@ -16,17 +12,19 @@ export interface EthicalReport {
 
 export class EthicalScannerService {
     /**
-     * Generate an ethical score for a product using OpenAI.
+     * Generate an ethical score for a product using Mistral AI.
      * Falls back to keyword heuristics if API key is not present.
      */
-    static async scanProduct(productId: string, title: string, description: string = ''): Promise<EthicalReport> {
-        if (!process.env.OPENAI_API_KEY) {
-            console.warn("OPENAI_API_KEY not found. Falling back to mock ethical heuristics.");
+    static async scanProduct(productId: string, title: string, description: string = '', userApiKey?: string): Promise<EthicalReport> {
+        const apiKey = userApiKey || process.env.MISTRAL_API_KEY;
+
+        if (!apiKey) {
+            console.warn("Mistral API key not provided. Falling back to mock ethical heuristics.");
             return this.mockScan(productId, title, description);
         }
 
         try {
-            const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+            const client = new Mistral({ apiKey });
             const prompt = `You are a strict sustainable fashion and consumer goods analyst. 
 Analyze the following product for ethical, environmental, and sustainability indicators.
 Product Title: "${title}"
@@ -44,13 +42,13 @@ Return exactly AND ONLY a JSON object with this shape:
   "summary": "Short 1-2 sentence summary of the ethical standing."
 }`;
 
-            const response = await openai.chat.completions.create({
-                model: 'gpt-4o-mini',
+            const response = await client.chat.complete({
+                model: 'mistral-small-latest',
                 messages: [{ role: 'user', content: prompt }],
-                response_format: { type: 'json_object' },
+                responseFormat: { type: 'json_object' },
             });
 
-            const content = response.choices[0].message.content || "{}";
+            const content = response.choices?.[0]?.message?.content?.toString() || "{}";
             const parsed = JSON.parse(content);
 
             return {
@@ -64,7 +62,7 @@ Return exactly AND ONLY a JSON object with this shape:
                 summary: parsed.summary || 'Ethical assessment unavailable.'
             };
         } catch (error) {
-            console.error("OpenAI ethical scan failed:", error);
+            console.error("Mistral ethical scan failed:", error);
             return this.mockScan(productId, title, description);
         }
     }
